@@ -85,11 +85,21 @@ while running:
 
     screen.fill('white')
     for cuboid in cuboids:
-        projected = cuboid.project()
+        vertices = cuboid.vertices
         lines = cuboid.edges
 
-        for i,j in lines:
-            pygame.draw.line(screen, COLOR, projected[i], projected[j], 2)
+        for i, j in lines:
+            clipped = cuboid.clip_edge(vertices[i], vertices[j])
+
+            if clipped is None:
+                continue  # Obie strony za kamerą — nie rysujemy
+
+            p1, p2 = clipped
+
+            start = cuboid.project_point(p1)
+            end = cuboid.project_point(p2)
+
+            pygame.draw.line(screen, COLOR, start, end, 2)
 
     pygame.display.flip()
 

@@ -77,20 +77,32 @@ class Cubiod:
             rotation_matrix = self.rotation_matrix_axis_z(angle)
             self.vertices = self.vertices.dot(rotation_matrix.T)
 
-    def project(self, f = 100):
+    def clip_edge(self, p1, p2, min_z=0.01):
+        (x1, y1, z1, _) = p1
+        (x2, y2, z2, _) = p2
+
+        if z1 >= min_z and z2 >= min_z:
+            return p1, p2
+
+        if z1 < min_z and z2 < min_z:
+            return None
+
+        if z1 < min_z:
+            z1 = min_z
+        if z2 < min_z:
+            z2 = min_z
+
+        return (x1, y1, z1, 1), (x2, y2, z2, 1)
+
+    def project_point(self, p, f=100):
+        x, y, z, _ = p
         cx = self.screen_width / 2
         cy = self.screen_height / 2
-        projected = []
-        for x, y, z, w in self.vertices:
-            if z <= 0:
-                z = 1e-6
 
-            x_ndc = (x * f) / z
-            y_ndc = (y * f) / z
+        x_n = (x * f) / z
+        y_n = (y * f) / z
 
-            screen_x = int(cx + x_ndc)
-            screen_y = int(cy - y_ndc)
+        screen_x = int(cx + x_n)
+        screen_y = int(cy - y_n)
 
-            projected.append([screen_x, screen_y])
-
-        return projected
+        return (screen_x, screen_y)
